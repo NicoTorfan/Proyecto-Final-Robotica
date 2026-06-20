@@ -46,17 +46,17 @@ WHEEL_RADIUS = 0.0205           # m, radio de la rueda del e-puck
 AXLE_LENGTH = 0.052              # m, distancia entre ruedas (L)
 
 # Umbral de sensores de proximidad para considerar "obstaculo cercano"
-PS_THRESHOLD_EVITAR = 80.0
+PS_THRESHOLD_EVITAR = 300.0
 # Umbral mas alto para contar "casi colision" (metrica de evaluacion)
 PS_THRESHOLD_CASI_COLISION = 150.0
 
 # Tolerancias de control
-DIST_TOLERANCIA_WAYPOINT = 0.05   # m, distancia para considerar alcanzado un punto
+DIST_TOLERANCIA_WAYPOINT = 0.03  # m, distancia para considerar alcanzado un punto
 DIST_TOLERANCIA_META = 0.05       # m, distancia para considerar alcanzada la meta
 
 # Ganancias del controlador proporcional (velocidad lineal y angular)
-KP_LINEAL = 2.0
-KP_ANGULAR = 4.0
+KP_LINEAL = 0.6
+KP_ANGULAR = 2.5
 
 
 # ============================================================
@@ -64,7 +64,7 @@ KP_ANGULAR = 4.0
 # ============================================================
 
 # Cambia esto a "simple" o "complejo" segun el mundo que tengas cargado.
-ESCENARIO = "complejo"
+ESCENARIO = "simple"
 
 # --- ESCENARIO SIMPLE: pocos obstaculos, ruta directa (Sec. 9) ---------
 ESCENARIO_SIMPLE_GRID = [
@@ -199,6 +199,7 @@ class EpuckNavController:
 
         # ---------- Estado de finalizacion ----------
         self.meta_alcanzada = False
+        self.ps_filtrado = [0.0] * 8
 
     # --------------------------------------------------------
     # 1) ESTIMACION DE MOVIMIENTO (ODOMETRIA) - Ecs. 3-7 enunciado
@@ -236,7 +237,14 @@ class EpuckNavController:
     # 2) PERCEPCION: lectura de sensores de proximidad
     # --------------------------------------------------------
     def leer_sensores(self):
-        return [s.getValue() for s in self.ps]
+        # Filtro pasa-bajos exponencial con alpha alto para evitar lag
+        alpha = 0.8  
+        raw_values = [s.getValue() for s in self.ps]
+        
+        for i in range(8):
+            self.ps_filtrado[i] = (alpha * raw_values[i]) + ((1.0 - alpha) * self.ps_filtrado[i])
+            
+        return self.ps_filtrado
 
     # --------------------------------------------------------
     # 3) NAVEGACION LOCAL: evitacion reactiva de obstaculos
@@ -261,12 +269,12 @@ class EpuckNavController:
         if front > PS_THRESHOLD_EVITAR or front_left > PS_THRESHOLD_EVITAR or front_right > PS_THRESHOLD_EVITAR:
             # Obstaculo al frente: girar hacia el lado con menos obstruccion
             if front_left > front_right:
-                # Mas obstaculo a la izquierda -> girar a la derecha
+                # Mas obstaculo a la izquierda -> curva hacia la derecha
                 vl = 0.5 * MAX_SPEED
-                vr = -0.3 * MAX_SPEED
+                vr = 0.1 * MAX_SPEED
             else:
-                # Mas obstaculo a la derecha -> girar a la izquierda
-                vl = -0.3 * MAX_SPEED
+                # Mas obstaculo a la derecha -> curva hacia la izquierda
+                vl = 0.1 * MAX_SPEED
                 vr = 0.5 * MAX_SPEED
             return True, vl, vr
 
@@ -302,11 +310,11 @@ class EpuckNavController:
             error_angulo = math.atan2(math.sin(error_angulo), math.cos(error_angulo))
 
         # Control proporcional: velocidad lineal y angular deseadas
-        v = KP_LINEAL * distancia
+        v = min(KP_LINEAL * distancia, 0.25)
         w = KP_ANGULAR * error_angulo
 
-        # Si el error angular es grande, priorizar el giro (no avanzar de frente)
-        if abs(error_angulo) > 0.6:
+        # Si el error angular es mayor a ~5 grados, priorizar giro (freno total de avance)
+        if abs(error_angulo) > 0.1:
             v = 0.0
 
         # Conversion a velocidades de rueda (cinematica diferencial)
