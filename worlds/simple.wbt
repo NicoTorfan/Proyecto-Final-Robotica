@@ -2,43 +2,91 @@
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
-EXTERNPROTO "../protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/robots/gctronic/e-puck/protos/E-puck.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/factory/containers/protos/WoodenBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/factory/manhole/protos/SquareManhole.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/factory/pallet/protos/WoodenPallet.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/animals/protos/Cat.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/3d7ebe8a2a6b72fb7f72e44f73b1befea8ef209d/projects/objects/obstacles/protos/OilBarrel.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.5753229285796919 0.5667560238125948 0.5897381938815086 2.1319071975233044
-  position 0.17281281806368895 -0.5746147487779261 6.30869109991982
+  orientation -0.5871337403817357 0.5150317991431418 0.6245127835174641 2.178598210827028
+  position 0.22299008980442273 0.060511083478504736 6.741364155604775
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-RectangleArena {
-  floorSize 1.6 1.6
+Floor {
+  size 2 2
 }
-WoodenBox {
-  translation -0.3 -0.3 0
-  size 0.2 0.2 0.2
+OilBarrel {
+  translation 0.576171 -0.433125 0.44
+  name "oil barrel(2)"
+  radius 0.06
 }
-WoodenBox {
-  translation -0.1 -0.3 0
-  name "wooden box(1)"
-  size 0.2 0.2 0.2
+OilBarrel {
+  translation 0.570196 -0.0884981 0.44
+  name "oil barrel(1)"
+  radius 0.06
 }
-WoodenBox {
-  translation -0.3 -0.1 0
-  name "wooden box(2)"
-  size 0.2 0.2 0.2
+Wall {
+  translation 0.951628 0.0341012 -1.02141e-13
+  rotation 0 0 1 -1.5707953071795862
+  name "wall(3)"
+  size 2 0.1 0.2
 }
-WoodenBox {
-  translation -0.1 -0.1 0
-  name "wooden box(3)"
-  size 0.2 0.2 0.2
+WoodenPallet {
+  translation -0.0977384 -0.307394 6.21725e-15
+  size 0.15 0.15 0.14
+}
+WoodenPallet {
+  translation -0.303701 -0.102943 0
+  name "wooden pallet(2)"
+  size 0.15 0.15 0.14
+}
+WoodenPallet {
+  translation -0.30534 -0.304343 0
+  name "wooden pallet(3)"
+  size 0.15 0.15 0.14
+}
+WoodenPallet {
+  translation -0.102288 -0.102723 0
+  name "wooden pallet(1)"
+  size 0.15 0.15 0.14
+}
+Wall {
+  translation 0.000472916 -0.938242 -7.72715e-14
+  size 2 0.1 0.2
+}
+Wall {
+  translation -0.944199 0.0350895 -1.02141e-13
+  rotation 0 0 1 -1.5707953071795862
+  name "wall(1)"
+  size 2 0.1 0.2
+}
+Wall {
+  translation 0.00175993 1.00758 0
+  name "wall(2)"
+  size 2 0.1 0.2
 }
 E-puck {
   translation -0.7 -0.7 0
   controller "e-puck_controlador"
+}
+SquareManhole {
+  translation 0.618705 0.742069 0
+  size 0.2 0.2 0.01
+  enableBoundingObject FALSE
+}
+Cat {
+  translation -0.212049 0.42031 0
+  scale 0.4
+}
+OilBarrel {
+  translation 0.348201 -0.624811 0.44
+  radius 0.06
 }
