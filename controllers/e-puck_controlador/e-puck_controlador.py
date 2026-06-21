@@ -43,12 +43,14 @@ TIME_STEP = 64                 # ms, paso de simulacion
 MAX_SPEED = 6.28                # rad/s, velocidad maxima de las ruedas e-puck
 
 WHEEL_RADIUS = 0.0205           # m, radio de la rueda del e-puck
-AXLE_LENGTH = 0.052              # m, distancia entre ruedas (L)
+# La distancia geometrica es 0.052, pero la distancia EFECTIVA cinematica en Webots
+# debido al grosor de las llantas es ~0.057. Esto es crucial para la odometria.
+AXLE_LENGTH = 0.057
 
 # Umbral de sensores de proximidad para considerar "obstaculo cercano"
-PS_THRESHOLD_EVITAR = 300.0
+PS_THRESHOLD_EVITAR = 800.0
 # Umbral mas alto para contar "casi colision" (metrica de evaluacion)
-PS_THRESHOLD_CASI_COLISION = 150.0
+PS_THRESHOLD_CASI_COLISION = 400.0
 
 # Tolerancias de control
 DIST_TOLERANCIA_WAYPOINT = 0.03  # m, distancia para considerar alcanzado un punto
@@ -64,7 +66,7 @@ KP_ANGULAR = 2.5
 # ============================================================
 
 # Cambia esto a "simple" o "complejo" segun el mundo que tengas cargado.
-ESCENARIO = "complejo"
+ESCENARIO = "simple"
 
 # --- ESCENARIO SIMPLE: pocos obstaculos, ruta directa (Sec. 9) ---------
 ESCENARIO_SIMPLE_GRID = [
@@ -163,15 +165,18 @@ class EpuckNavController:
         except Exception:
             self.gps = None
 
-        # ---------- Estado de odometria ----------
-        # Pose inicial: se asume que el robot parte en el centro de START_CELL,
-        # mirando en direccion +X (phi = 0). Ajustar si tu robot parte con otra
-        # orientacion en el mundo.
+        # Orientacion inicial dependiente del mapa:
+        # En el mapa complejo lo rotamos en Webots para que mire hacia arriba (+Y) -> pi/2
+        # En el mapa simple esta mirando hacia la derecha (+X) -> 0.0
         self.grid, self.start_cell, self.goal_cell = seleccionar_escenario()
         x0, y0 = celda_a_mundo(self.start_cell)
         self.x = x0
         self.y = y0
-        self.phi = 0.0
+        
+        if ESCENARIO == "complejo":
+            self.phi = math.pi / 2.0
+        else:
+            self.phi = 0.0
 
         self.prev_left_enc = None
         self.prev_right_enc = None
@@ -296,8 +301,12 @@ class EpuckNavController:
         error_angulo = angulo_objetivo - self.phi
         error_angulo = math.atan2(math.sin(error_angulo), math.cos(error_angulo))
 
+        # Usar tolerancia de meta si es el ultimo waypoint
+        es_ultimo_waypoint = (self.waypoint_idx == len(self.ruta_planeada) - 1)
+        tolerancia = DIST_TOLERANCIA_META if es_ultimo_waypoint else DIST_TOLERANCIA_WAYPOINT
+
         # Si llegamos al waypoint actual, avanzar al siguiente
-        if distancia < DIST_TOLERANCIA_WAYPOINT:
+        if distancia < tolerancia:
             self.waypoint_idx += 1
             if self.waypoint_idx >= len(self.ruta_planeada):
                 return 0.0, 0.0, True
@@ -310,11 +319,16 @@ class EpuckNavController:
             error_angulo = math.atan2(math.sin(error_angulo), math.cos(error_angulo))
 
         # Control proporcional: velocidad lineal y angular deseadas
-        v = min(KP_LINEAL * distancia, 0.25)
+        # FIX APLICADO AQUI: limitar v a 0.08 para no saturar los motores y perder direccion
+        v = min(KP_LINEAL * distancia, 0.08)
         w = KP_ANGULAR * error_angulo
+        
+        # Limitar la velocidad de giro para que no derrape (slip) sobre el piso de Webots
+        w = max(-1.5, min(1.5, w))
 
-        # Si el error angular es mayor a ~5 grados, priorizar giro (freno total de avance)
-        if abs(error_angulo) > 0.1:
+        # Si el error angular es mayor a ~1 grado, priorizar giro (freno total de avance)
+        # Es vital que el robot se alinee casi perfectamente para no desviarse al avanzar
+        if abs(error_angulo) > 0.02:
             v = 0.0
 
         # Conversion a velocidades de rueda (cinematica diferencial)

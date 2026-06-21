@@ -35,8 +35,7 @@ def vecinos(grid, celda):
     i, j = celda
  
     movimientos = [
-        (-1, 0), (1, 0), (0, -1), (0, 1),   # arriba, abajo, izq, der
-        (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonales
+        (-1, 0), (1, 0), (0, -1), (0, 1)   # arriba, abajo, izq, der
     ]
  
     resultado = []
@@ -44,12 +43,6 @@ def vecinos(grid, celda):
         ni, nj = i + di, j + dj
         if 0 <= ni < filas and 0 <= nj < cols:
             if grid[ni][nj] == 0:
-                # Evitar "cortar" esquinas: si es movimiento diagonal,
-                # exigir que las dos celdas ortogonales adyacentes
-                # tambien esten libres.
-                if di != 0 and dj != 0:
-                    if grid[i + di][j] == 1 or grid[i][j + dj] == 1:
-                        continue
                 resultado.append((ni, nj))
     return resultado
  
