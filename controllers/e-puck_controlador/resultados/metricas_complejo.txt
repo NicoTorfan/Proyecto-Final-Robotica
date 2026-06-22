@@ -1,0 +1,7 @@
+Escenario: complejo
+Tiempo total hasta la meta: 43.14 s
+Longitud ruta planificada (A*): 2.800 m
+Longitud trayectoria ejecutada: 2.670 m
+Diferencia (planeada vs real): 0.130 m
+Casi-colisiones detectadas: 0
+Cambios de waypoint (giros): 4

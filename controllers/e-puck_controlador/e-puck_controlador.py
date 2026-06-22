@@ -66,7 +66,7 @@ KP_ANGULAR = 2.5
 # ============================================================
 
 # Cambia esto a "simple" o "complejo" segun el mundo que tengas cargado.
-ESCENARIO = "simple"
+ESCENARIO = "complejo"
 
 # --- ESCENARIO SIMPLE: pocos obstaculos, ruta directa (Sec. 9) ---------
 ESCENARIO_SIMPLE_GRID = [
